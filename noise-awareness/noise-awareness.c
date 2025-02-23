@@ -143,8 +143,8 @@ bool samples_callback(struct repeating_timer *t) {
     // com valores menores do que o valor de referência
     float samples_sum = 0;
     int outliers = 0;
-    // Etapa necessária pois foi entendido que o ruído do microfone causa leituras imprecisas, 
-    // com valores menores do que o valor de referência
+    // Etapa necessária pois como o trimmer não estava ajustando, foi entendido que o ruído do microfone causa leituras imprecisas, 
+    // com valores menores do que o valor de referência. Talvez o trimmer acabou ficando num volume alto e acaba captando muito ruído.
     // NOTA: tentei modularizar para um método que retornava o valor de 'sum' porém estava ocorrendo uma inconsistência que fazia divergir o cálculo
     for (int i = 0; i < count; i++) {
         if (buffer[i] < BASE_VOLTAGE) {
@@ -190,10 +190,15 @@ void turn_off_leds() {
     pwm_set_gpio_level(HIGH_LEVEL, 0);
 }
 
-void set_led_level(uint8_t *led_selection, float value) {
+void set_led_level(uint8_t led_selection, float value) {
     turn_off_leds();
     // for (int i = 0; i < sizeof(led_selection) / sizeof(led_selection[0]); i++) {
-    pwm_set_gpio_level(led_selection, value);
+    if (led_selection == MID_LEVEL) {
+        pwm_set_gpio_level(SOFT_LEVEL, (value - 500));
+        pwm_set_gpio_level(HIGH_LEVEL, (value - 1000));
+    } else {
+        pwm_set_gpio_level(led_selection, value);
+    }
     // }
 }
 
